@@ -2,7 +2,7 @@
 [![Build status](https://travis-ci.org/shavitush/cssbhop.svg?branch=master)](https://travis-ci.org/shavitush/cssbhop)
 
 # CS:S Auto Bunnyhop (C#)
-A client sided bhop cheat that doesn't let you go on VAC secured seervers.
+A client sided bhop cheat that doesn't let you go on VAC secured servers.
 ___
 
 * This tool is basically client sided autobunnyhop for Counter-Strike: Source, works as an external cheat and uses the Win32API functions `ReadProcessMemory` and `WriteProcessMemory`.
