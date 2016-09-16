@@ -266,20 +266,20 @@ namespace cssbhop
         /// </summary>
         private void CheatTread()
         {
+            ulong i = 0;
+
             while(true)
             {
+                if((++i % 1000) == 0)
+                {
+                    this.LocalPlayerAddress = this.ReadInt(this.ClientDLL + Offsets.LocalPlayer);
+                }
+
 #if DEBUG
                 Thread.Sleep(250);
 #else
                 Thread.Sleep(1);
 #endif
-
-                int iTeam = this.Team;
-
-                if(iTeam == MEMORY_READ_FAILED)
-                {
-                    this.LocalPlayerAddress = this.ReadInt(this.ClientDLL + Offsets.LocalPlayer);
-                }
 
 #if DEBUG
                 Console.WriteLine("Team? {0} Alive? {1} can jump {2} in water {3}", iTeam, this.LifeState, this.CanJump.ToString(), this.InWater.ToString());
@@ -292,7 +292,7 @@ namespace cssbhop
                     this.WriteInt(this.ClientDLL + Offsets.JumpAddress, 4);
                 }
 
-                if(this.Paused || iTeam < 2 || !this.Alive || (!this.CanJump && !this.InWater) || !bSpaceHeld)
+                if(this.Paused || this.Team < 2 || !this.Alive || (!this.CanJump && !this.InWater) || !bSpaceHeld)
                 {
                     continue;
                 }
