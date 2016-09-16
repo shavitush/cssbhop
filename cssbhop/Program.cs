@@ -82,16 +82,26 @@ namespace cssbhop
 
             Console.WriteLine("Write \"bye\" and press <ENTER> to exit.");
 
-            if(!bFound || !gGP_Game.Insecure)
+            if(gGP_Game.Insecure)
             {
-                Console.WriteLine("ERROR: Could not find hl2.exe");
+                if(!bFound)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("ERROR: Could not find hl2.exe");
+                }
+
+                else
+                {
+                    Console.WriteLine("Starting threads.");
+                    gGP_Game.StartThread();
+                    Console.WriteLine("Threads started.\n\t- Hold <SPACE> to jump infinitely!");
+                }
             }
 
             else
             {
-                Console.WriteLine("Starting threads.");
-                gGP_Game.StartThread();
-                Console.WriteLine("Threads started.\n\t- Hold <SPACE> to jump infinitely!");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("\t- ERROR: Running without -insecure.");
             }
 
             Console.ForegroundColor = ConsoleColor.White;
