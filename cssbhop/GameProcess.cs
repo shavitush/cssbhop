@@ -282,7 +282,7 @@ namespace cssbhop
 #endif
 
 #if DEBUG
-                Console.WriteLine("Team? {0} Alive? {1} can jump {2} in water {3}", iTeam, this.LifeState, this.CanJump.ToString(), this.InWater.ToString());
+                Console.WriteLine("Team? {0} Alive? {1} can jump {2} in water {3}", this.Team, this.LifeState, this.CanJump.ToString(), this.InWater.ToString());
 #endif
 
                 bool bSpaceHeld = ((GetAsyncKeyState(Keys.Space) & (1 << 16)) > 0);
