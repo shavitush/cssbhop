@@ -13,7 +13,7 @@ namespace cssbhop
 		{
 			gGP_Game = new GameProcess();
 
-			Console.Title = "Autobhop tool ~ 1.0";
+			Console.Title = "Autobhop tool ~ 1.1";
 			Console.ForegroundColor = ConsoleColor.Cyan;
 			Console.WriteLine("https://github.com/shavitush/cssbhop\n");
 

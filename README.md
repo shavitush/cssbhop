@@ -1,3 +1,5 @@
+# [Download](https://github.com/shavitush/cssbhop/releases/latest)
+
 ### Build status
 [![Build status](https://travis-ci.org/shavitush/cssbhop.svg?branch=master)](https://travis-ci.org/shavitush/cssbhop)
 
