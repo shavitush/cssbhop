@@ -7,15 +7,17 @@ namespace cssbhop
 {
 	public class Program
 	{
-		private static GameProcess gGP_Game = null;
+		private static GameProcess Game = null;
+		public static bool UpdateNeeded = false;
 
 		public static void Main()
 		{
-			gGP_Game = new GameProcess();
+			Game = new GameProcess();
 
-			Console.Title = "Autobhop tool ~ 1.1";
+			Console.Title = string.Format("Autobhop tool ~ {0}", General.Version);
 			Console.ForegroundColor = ConsoleColor.Cyan;
 			Console.WriteLine("https://github.com/shavitush/cssbhop\n");
+			AutoUpdater.StartUpdate();
 
 			bool bFound = false;
 
@@ -29,42 +31,42 @@ namespace cssbhop
 						{
 							foreach(ManagementObject a in searcher.Get())
 							{
-								gGP_Game.CommandLine += a["CommandLine"] + " ";
+								Game.CommandLine += a["CommandLine"] + " ";
 							}
 						}
 
-						gGP_Game.Name = process.MainWindowTitle;
-						gGP_Game.Path = process.MainModule.FileName;
-						gGP_Game.Process = process;
-						gGP_Game.Insecure = gGP_Game.CommandLine.Contains("-insecure");
-						gGP_Game.ProcessID = process.Id;
-						gGP_Game.ProcessHandler = process.Handle;
+						Game.Name = process.MainWindowTitle;
+						Game.Path = process.MainModule.FileName;
+						Game.Process = process;
+						Game.Insecure = Game.CommandLine.Contains("-insecure");
+						Game.ProcessID = process.Id;
+						Game.ProcessHandler = process.Handle;
 
-						foreach(ProcessModule module in gGP_Game.Process.Modules)
+						foreach(ProcessModule module in Game.Process.Modules)
 						{
 							if(module.ModuleName.Equals("client.dll"))
 							{
-								gGP_Game.ClientDLL = (int)module.BaseAddress;
-								Console.WriteLine("client.dll ~ 0x{0}", gGP_Game.ClientDLL.ToString("X"));
+								Game.ClientDLL = (int)module.BaseAddress;
+								Console.WriteLine("client.dll ~ 0x{0}", Game.ClientDLL.ToString("X"));
 							}
 
 							else if(module.ModuleName.Equals("vguimatsurface.dll"))
 							{
-								gGP_Game.VGUIDLL = (int)module.BaseAddress;
-								Console.WriteLine("vguimatsurface.dll ~ 0x{0}", gGP_Game.VGUIDLL.ToString("X"));
+								Game.VGUIDLL = (int)module.BaseAddress;
+								Console.WriteLine("vguimatsurface.dll ~ 0x{0}", Game.VGUIDLL.ToString("X"));
 							}
 						}
 
-						gGP_Game.LocalPlayerAddress = gGP_Game.ReadInt(gGP_Game.ClientDLL + Offsets.LocalPlayer);
+						Game.LocalPlayerAddress = Game.ReadInt(Game.ClientDLL + Offsets.LocalPlayer);
 
-						Console.WriteLine("\nFound hl2.exe ({0} ~ PID {1})", gGP_Game.Name, gGP_Game.ProcessID);
+						Console.WriteLine("\nFound hl2.exe ({0} ~ PID {1})", Game.Name, Game.ProcessID);
 
-						if(!gGP_Game.Insecure)
+						if(!Game.Insecure)
 						{
 							Console.WriteLine("\t- Running without -insecure, terminating game to prevent VAC bans.");
 
-							gGP_Game.Process.Kill();
-							gGP_Game.Process.WaitForExit();
+							Game.Process.Kill();
+							Game.Process.WaitForExit();
 						}
 
 						bFound = true;
@@ -80,7 +82,7 @@ namespace cssbhop
 				}
 			}
 
-			Console.WriteLine("Write \"bye\" and press <ENTER> to exit.");
+			Console.WriteLine("Write \"bye\" and press <ENTER> to exit." + Environment.NewLine);
 
 			if(!bFound)
 			{
@@ -88,7 +90,7 @@ namespace cssbhop
 				Console.WriteLine("ERROR: Could not find hl2.exe");
 			}
 
-			else if(!gGP_Game.Insecure)
+			else if(!Game.Insecure)
 			{
 				Console.ForegroundColor = ConsoleColor.Red;
 				Console.WriteLine("\t- ERROR: Running without -insecure.");
@@ -96,14 +98,33 @@ namespace cssbhop
 
 			Console.ForegroundColor = ConsoleColor.White;
 
-			while(!Console.ReadLine().Equals("bye"))
+			string sInput;
+
+			while(!(sInput = Console.ReadLine()).Equals("bye"))
 			{
-				Console.ForegroundColor = ConsoleColor.Red;
-				Console.WriteLine("ERROR: Invalid input.\n");
-				Console.ForegroundColor = ConsoleColor.White;
+				if(sInput.Equals("update"))
+				{
+					if(UpdateNeeded)
+					{
+						// Game
+						Process.Start("https://github.com/shavitush/cssbhop/releases/latest");
+					}
+
+					else
+					{
+						Console.WriteLine("There's no pending update.");
+					}
+				}
+
+				else
+				{
+					Console.ForegroundColor = ConsoleColor.Red;
+					Console.WriteLine("ERROR: Invalid input." + Environment.NewLine);
+					Console.ForegroundColor = ConsoleColor.White;
+				}
 			}
 
-			gGP_Game.KillThreads();
+			Game.KillThreads();
 		}
 	}
 }
