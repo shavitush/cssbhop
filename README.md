@@ -17,6 +17,11 @@ Structure
 * `Offsets.cs` - has memory addresses and offsets, they'll probably break through updates.
 * `GameProcess.cs` - a simple to use and fully commented class for cheat usage.
 
+Performance Monitoring
+--
+Run the program with the parameter `monitoring` (or `monitor`) to know how fast it takes the program to execute functions on your computer.  
+Example: `cssbhop.exe --monitoring`.
+
 License
 --
 GNU GPL v3, see **[LICENSE](https://github.com/shavitush/cssbhop/blob/master/LICENSE)**.
