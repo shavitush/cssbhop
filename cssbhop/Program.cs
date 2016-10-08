@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Management;
+using Mono.Options;
 
 namespace cssbhop
 {
@@ -10,8 +11,21 @@ namespace cssbhop
 		private static GameProcess Game = null;
 		public static bool UpdateNeeded = false;
 
-		public static void Main()
+		public static void Main(string[] args)
 		{
+			Monitor monitor = new Monitor("Time it took to execute threads: {ms}ms", true);
+			monitor?.Start();
+
+			OptionSet options = new OptionSet()
+				.Add("monitor|monitoring", "Show how long it takes to execute stuff.",
+				delegate (string dummy)
+				{
+					General.Monitoring = true;
+					Console.WriteLine("Performance monitoring enabled.");
+				});
+
+			options.Parse(args);
+
 			Game = new GameProcess();
 
 			Console.Title = string.Format("Autobhop tool ~ {0}", General.Version);
@@ -29,9 +43,9 @@ namespace cssbhop
 					{
 						using(ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT CommandLine FROM Win32_Process WHERE ProcessId = " + process.Id))
 						{
-							foreach(ManagementObject a in searcher.Get())
+							foreach(ManagementObject manager in searcher.Get())
 							{
-								Game.CommandLine += a["CommandLine"] + " ";
+								Game.CommandLine += manager["CommandLine"] + " ";
 							}
 						}
 
@@ -69,6 +83,11 @@ namespace cssbhop
 							Game.Process.WaitForExit();
 						}
 
+						else
+						{
+							Game.StartThread();
+						}
+
 						bFound = true;
 					}
 				}
@@ -83,20 +102,24 @@ namespace cssbhop
 			}
 
 			Console.WriteLine("Write \"bye\" and press <ENTER> to exit." + Environment.NewLine);
+			Console.ForegroundColor = ConsoleColor.Red;
 
 			if(!bFound)
 			{
-				Console.ForegroundColor = ConsoleColor.Red;
 				Console.WriteLine("ERROR: Could not find hl2.exe");
 			}
 
 			else if(!Game.Insecure)
 			{
-				Console.ForegroundColor = ConsoleColor.Red;
 				Console.WriteLine("\t- ERROR: Running without -insecure.");
 			}
 
 			Console.ForegroundColor = ConsoleColor.White;
+
+			if(General.Monitoring)
+			{
+				Console.WriteLine(monitor?.ToString());
+			}
 
 			string sInput;
 
@@ -106,7 +129,6 @@ namespace cssbhop
 				{
 					if(UpdateNeeded)
 					{
-						// Game
 						Process.Start("https://github.com/shavitush/cssbhop/releases/latest");
 					}
 

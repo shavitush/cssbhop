@@ -1,8 +1,0 @@
-language: csharp
-solution: cssbhop.sln
-mono:
-    - latest
-install:
-    - nuget restore cssbhop.sln
-script:
-    - xbuild cssbhop.sln

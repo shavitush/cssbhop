@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Timers;
@@ -29,6 +31,8 @@ namespace cssbhop
 		private int iClientDLL;
 		private int iVGUIDLL;
 		private int iLocalPlayerAddress;
+		private Monitor pMonitor;
+		private List<long> lMonitor;
 
 		/// <summary>
 		/// Class constructor.
@@ -46,6 +50,12 @@ namespace cssbhop
 			this.iClientDLL = -1;
 			this.iVGUIDLL = -1;
 			this.iLocalPlayerAddress = -1;
+
+			if(General.Monitoring)
+			{
+				this.pMonitor = new Monitor(string.Empty);
+				this.lMonitor = new List<long>();
+			}
 		}
 
 		/// <summary>
@@ -144,6 +154,9 @@ namespace cssbhop
 			}
 		}
 
+		/// <summary>
+		/// Handler to the game process.
+		/// </summary>
 		public IntPtr ProcessHandler
 		{
 			get
@@ -157,6 +170,9 @@ namespace cssbhop
 			}
 		}
 
+		/// <summary>
+		/// Address for the client.dll module.
+		/// </summary>
 		public int ClientDLL
 		{
 			get
@@ -170,6 +186,9 @@ namespace cssbhop
 			}
 		}
 
+		/// <summary>
+		/// Address for the vguimatsurface.dll module.
+		/// </summary>
 		public int VGUIDLL
 		{
 			get
@@ -183,6 +202,10 @@ namespace cssbhop
 			}
 		}
 
+		/// <summary>
+		/// Address to localplayer.
+		/// Combined with client.dll.
+		/// </summary>
 		public int LocalPlayerAddress
 		{
 			get
@@ -270,14 +293,22 @@ namespace cssbhop
 
 			while(true)
 			{
+				this.pMonitor?.Start();
+
 				if((++i % 1000) == 0)
 				{
 					this.LocalPlayerAddress = this.ReadInt(this.ClientDLL + Offsets.LocalPlayer);
+
+					if(this.lMonitor?.Count > 0)
+					{
+						Console.WriteLine("Last 1000 actions averaged at {0}ms.", Convert.ToInt64(this.lMonitor.Average()));
+						this.lMonitor.Clear();
+					}
 				}
 
 #if DEBUG
                 Thread.Sleep(250);
-#else
+#else	
 				Thread.Sleep(1);
 #endif
 
@@ -294,11 +325,16 @@ namespace cssbhop
 
 				if(this.Paused || this.Team < 2 || !this.Alive || (!this.CanJump && !this.InWater) || !bSpaceHeld)
 				{
+					this.pMonitor?.Stop();
+					this.lMonitor?.Add(this.pMonitor.ElapsedMilliseconds);
+					this.pMonitor?.Reset();
+
 					continue;
 				}
 
 				// 5 - jumping, 4 - not
 				this.WriteInt(this.ClientDLL + Offsets.JumpAddress, 5);
+
 				Thread.Sleep(25);
 #if DEBUG
                 Console.WriteLine("1: {0}", this.ReadInt(this.ClientDLL + Offsets.JumpAddress));

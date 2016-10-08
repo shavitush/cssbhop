@@ -1,7 +1,7 @@
 # [Download](https://github.com/shavitush/cssbhop/releases/latest)
 
 ### Build status
-[![Build status](https://travis-ci.org/shavitush/cssbhop.svg?branch=master)](https://travis-ci.org/shavitush/cssbhop)
+[![Build status](https://ci.appveyor.com/api/projects/status/q786xn0q6y83xj7h?svg=true)](https://ci.appveyor.com/project/shavitush/cssbhop)
 
 # CS:S Auto Bunnyhop (C#)
 A client sided bhop cheat that doesn't let you go on VAC secured servers.

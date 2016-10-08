@@ -5,7 +5,8 @@
 		/// <summary>
 		/// Private variables.
 		/// </summary>
-		private static float fVersion = 1.2f;
+		private static float fVersion = 1.3f;
+		private static bool bMonitoring = false;
 
 		/// <summary>
 		/// Retrieves the current version of cssbhop.
@@ -15,6 +16,22 @@
 			get
 			{
 				return fVersion;
+			}
+		}
+
+		/// <summary>
+		/// Are we monitoring performance?
+		/// </summary>
+		public static bool Monitoring
+		{
+			get
+			{
+				return bMonitoring;
+			}
+
+			set
+			{
+				bMonitoring = value;
 			}
 		}
 	}
