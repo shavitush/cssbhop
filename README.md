@@ -13,9 +13,12 @@ ___
 
 Structure
 --
-* `Program.cs` - initializes the thread, `GameProcess` class and grabs modules.
-* `Offsets.cs` - has memory addresses and offsets, they'll probably break through updates.
+* `AutoUpdater.cs` - auto-updater class, can be easily ported to use with other open-source programs.
 * `GameProcess.cs` - a simple to use and fully commented class for cheat usage.
+* `General.cs` - version, some settings.
+* `Monitor.cs` - extended version of `Stopwatch` with a different `ToString()` function.
+* `Offsets.cs` - has memory addresses and offsets, they'll probably break through updates.
+* `Program.cs` - initializes the thread, `GameProcess` class and grabs modules.
 
 Performance Monitoring
 --

@@ -30,7 +30,7 @@ namespace cssbhop
 
 			Console.Title = string.Format("Autobhop tool ~ {0}", General.Version);
 			Console.ForegroundColor = ConsoleColor.Cyan;
-			Console.WriteLine("https://github.com/shavitush/cssbhop\n");
+			Console.WriteLine("https://github.com/shavitush/cssbhop" + Environment.NewLine);
 			AutoUpdater.StartUpdate();
 
 			bool bFound = false;
