@@ -18,7 +18,7 @@ namespace cssbhop
 
 			OptionSet options = new OptionSet()
 				.Add("monitor|monitoring", "Show how long it takes to execute stuff.",
-				delegate (string dummy)
+				(string dummy) =>
 				{
 					General.Monitoring = true;
 					Console.WriteLine("Performance monitoring enabled.");

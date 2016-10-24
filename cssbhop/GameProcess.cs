@@ -12,66 +12,17 @@ namespace cssbhop
 	class GameProcess
 	{
 		/// <summary>
-		/// Statics.
+		/// A value to know when memory reads fail.
 		/// </summary>
-		public static int MEMORY_READ_FAILED = int.MinValue;
-
-		/// <summary>
-		/// Private variables.
-		/// </summary>
-		private string sName;
-		private string sPath;
-		private string sCmdline;
-		private bool bInsecure;
-		private Process pProcess;
-		private int iProcessID;
-		private Thread tCheatThread;
-		private System.Timers.Timer tKeepAlive;
-		private IntPtr ipHandler;
-		private int iClientDLL;
-		private int iVGUIDLL;
-		private int iLocalPlayerAddress;
-		private Monitor pMonitor;
-		private List<long> lMonitor;
-
-		/// <summary>
-		/// Class constructor.
-		/// </summary>
-		public GameProcess()
-		{
-			this.sName = string.Empty;
-			this.sCmdline = string.Empty;
-			this.bInsecure = false;
-			this.pProcess = null;
-			this.iProcessID = -1;
-			this.tCheatThread = null;
-			this.tKeepAlive = null;
-			this.ipHandler = IntPtr.Zero;
-			this.iClientDLL = -1;
-			this.iVGUIDLL = -1;
-			this.iLocalPlayerAddress = -1;
-
-			if(General.Monitoring)
-			{
-				this.pMonitor = new Monitor(string.Empty);
-				this.lMonitor = new List<long>();
-			}
-		}
+		public const int MEMORY_READ_FAILED = int.MinValue;
 
 		/// <summary>
 		/// Window title for the game.
 		/// </summary>
 		public string Name
 		{
-			get
-			{
-				return this.sName;
-			}
-
-			set
-			{
-				this.sName = value;
-			}
+			get;
+			set;
 		}
 
 		/// <summary>
@@ -79,15 +30,8 @@ namespace cssbhop
 		/// </summary>
 		public string Path
 		{
-			get
-			{
-				return this.sPath;
-			}
-
-			set
-			{
-				this.sPath = value;
-			}
+			get;
+			set;
 		}
 
 		/// <summary>
@@ -95,31 +39,17 @@ namespace cssbhop
 		/// </summary>
 		public string CommandLine
 		{
-			get
-			{
-				return this.sCmdline;
-			}
-
-			set
-			{
-				this.sCmdline = value;
-			}
+			get;
+			set;
 		}
 
 		/// <summary>
-		/// Running VAC secured?
+		/// Running with -insecure?
 		/// </summary>
 		public bool Insecure
 		{
-			get
-			{
-				return this.bInsecure;
-			}
-
-			set
-			{
-				this.bInsecure = value;
-			}
+			get;
+			set;
 		}
 
 		/// <summary>
@@ -127,31 +57,17 @@ namespace cssbhop
 		/// </summary>
 		public Process Process
 		{
-			get
-			{
-				return this.pProcess;
-			}
-
-			set
-			{
-				this.pProcess = value;
-			}
-		}
+			get;
+			set;
+		} = null;
 
 		/// <summary>
 		/// Process ID.
 		/// </summary>
 		public int ProcessID
 		{
-			get
-			{
-				return this.iProcessID;
-			}
-
-			set
-			{
-				this.iProcessID = value;
-			}
+			get;
+			set;
 		}
 
 		/// <summary>
@@ -159,31 +75,17 @@ namespace cssbhop
 		/// </summary>
 		public IntPtr ProcessHandler
 		{
-			get
-			{
-				return this.ipHandler;
-			}
-
-			set
-			{
-				this.ipHandler = value;
-			}
-		}
+			get;
+			set;
+		} = IntPtr.Zero;
 
 		/// <summary>
 		/// Address for the client.dll module.
 		/// </summary>
 		public int ClientDLL
 		{
-			get
-			{
-				return this.iClientDLL;
-			}
-
-			set
-			{
-				this.iClientDLL = value;
-			}
+			get;
+			set;
 		}
 
 		/// <summary>
@@ -191,15 +93,8 @@ namespace cssbhop
 		/// </summary>
 		public int VGUIDLL
 		{
-			get
-			{
-				return this.iVGUIDLL;
-			}
-
-			set
-			{
-				this.iVGUIDLL = value;
-			}
+			get;
+			set;
 		}
 
 		/// <summary>
@@ -208,15 +103,8 @@ namespace cssbhop
 		/// </summary>
 		public int LocalPlayerAddress
 		{
-			get
-			{
-				return this.iLocalPlayerAddress;
-			}
-
-			set
-			{
-				this.iLocalPlayerAddress = value;
-			}
+			get;
+			set;
 		}
 
 		/// <summary>
@@ -224,30 +112,46 @@ namespace cssbhop
 		/// </summary>
 		public Thread Thread
 		{
-			get
-			{
-				return this.tCheatThread;
-			}
-
-			set
-			{
-				this.tCheatThread = value;
-			}
-		}
+			get;
+			set;
+		} = null;
 
 		/// <summary>
 		/// Keep-alive thread. (Is the game closed?)
 		/// </summary>
 		public System.Timers.Timer KeepAlive
 		{
-			get
-			{
-				return this.tKeepAlive;
-			}
+			get;
+			set;
+		} = null;
 
-			set
+		/// <summary>
+		/// Performance monitor.
+		/// </summary>
+		private Monitor Monitor
+		{
+			get;
+			set;
+		} = null;
+
+		/// <summary>
+		/// List of the last performance measurements.
+		/// </summary>
+		private List<long> MonitorList
+		{
+			get;
+			set;
+		} = null;
+
+		/// <summary>
+		/// Class constructor.
+		/// </summary>
+		public GameProcess()
+		{
+			if(General.Monitoring)
 			{
-				this.tKeepAlive = value;
+				this.Monitor = new Monitor(string.Empty);
+				this.MonitorList = new List<long>();
 			}
 		}
 
@@ -293,22 +197,22 @@ namespace cssbhop
 
 			while(true)
 			{
-				this.pMonitor?.Start();
+				this.Monitor?.Start();
 
 				if((++i % 1000) == 0)
 				{
 					this.LocalPlayerAddress = this.ReadInt(this.ClientDLL + Offsets.LocalPlayer);
 
-					if(this.lMonitor?.Count > 0)
+					if(this.MonitorList?.Count > 0)
 					{
-						Console.WriteLine("Last 1000 actions averaged at {0}ms.", Convert.ToInt64(this.lMonitor.Average()));
-						this.lMonitor.Clear();
+						Console.WriteLine("Last 1000 actions averaged at {0}ms.", Convert.ToInt64(this.MonitorList.Average()));
+						this.MonitorList.Clear();
 					}
 				}
 
 #if DEBUG
                 Thread.Sleep(250);
-#else	
+#else
 				Thread.Sleep(1);
 #endif
 
@@ -323,11 +227,11 @@ namespace cssbhop
 					this.WriteInt(this.ClientDLL + Offsets.JumpAddress, 4);
 				}
 
-				if(this.Paused || this.Team < 2 || !this.Alive || (!this.CanJump && !this.InWater) || !bSpaceHeld)
+				if((!this.CanJump && !this.InWater) || !this.Alive || this.Team < 2 || this.Paused)
 				{
-					this.pMonitor?.Stop();
-					this.lMonitor?.Add(this.pMonitor.ElapsedMilliseconds);
-					this.pMonitor?.Reset();
+					this.Monitor?.Stop();
+					this.MonitorList?.Add(this.Monitor.ElapsedMilliseconds);
+					this.Monitor?.Reset();
 
 					continue;
 				}
@@ -424,7 +328,7 @@ namespace cssbhop
 			byte[] bData = new byte[4];
 			IntPtr ipBytesRead = IntPtr.Zero;
 
-			if(!ReadProcessMemory(this.ipHandler, (IntPtr)address, bData, bData.Length, out ipBytesRead) || ipBytesRead.ToInt32() != 4)
+			if(!ReadProcessMemory(this.ProcessHandler, (IntPtr)address, bData, bData.Length, out ipBytesRead) || ipBytesRead.ToInt32() != 4)
 			{
 				return MEMORY_READ_FAILED;
 			}
@@ -442,7 +346,7 @@ namespace cssbhop
 			byte[] bData = BitConverter.GetBytes(value);
 			IntPtr ipBytesWritten = IntPtr.Zero;
 
-			if(!WriteProcessMemory(this.ipHandler, (IntPtr)address, bData, bData.Length, out ipBytesWritten) || ipBytesWritten.ToInt32() != 4)
+			if(!WriteProcessMemory(this.ProcessHandler, (IntPtr)address, bData, bData.Length, out ipBytesWritten) || ipBytesWritten.ToInt32() != 4)
 			{
 				return false;
 			}
