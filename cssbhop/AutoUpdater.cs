@@ -8,6 +8,7 @@ namespace cssbhop
 {
 	public class AutoUpdater
 	{
+		#region Object constructor
 		/// <summary>
 		/// Starts the update thread.
 		/// </summary>
@@ -16,7 +17,9 @@ namespace cssbhop
 			Thread tUpdateThread = new Thread(new ThreadStart(UpdateThread));
 			tUpdateThread.Start();
 		}
+		#endregion
 
+		#region Object methods
 		/// <summary>
 		/// Checks if there's a pending update.
 		/// </summary>
@@ -51,5 +54,6 @@ namespace cssbhop
 				Program.UpdateNeeded = false;
 			}
 		}
+		#endregion
 	}
 }

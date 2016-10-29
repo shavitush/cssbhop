@@ -2,13 +2,14 @@
 {
 	public class General
 	{
+		#region Public variables
 		/// <summary>
 		/// Program version.
 		/// </summary>
 		public const float Version = 1.3f;
 
 		/// <summary>
-		/// Program version.
+		/// Path to the application's repository on GitHub.
 		/// </summary>
 		public const string Repository = "shavitush/cssbhop";
 
@@ -20,5 +21,6 @@
 			get;
 			set;
 		} = false;
+		#endregion
 	}
 }

@@ -8,9 +8,12 @@ namespace cssbhop
 {
 	public class Program
 	{
+		#region General variables
 		private static GameProcess Game = null;
 		public static bool UpdateNeeded = false;
+		#endregion
 
+		#region Startup method
 		public static void Main(string[] args)
 		{
 			Monitor monitor = new Monitor("Time it took to execute threads: {ms}ms", true);
@@ -148,5 +151,6 @@ namespace cssbhop
 
 			Game.KillThreads();
 		}
+		#endregion
 	}
 }

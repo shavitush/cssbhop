@@ -10,18 +10,23 @@ namespace cssbhop
 	/// </summary>
 	class Monitor : Stopwatch, IDisposable
 	{
+		#region IDisposable variables
 		/// <summary>
 		/// Dispose logic.
 		/// </summary>
 		private bool disposed = false;
 		private SafeHandle handle = new SafeFileHandle(IntPtr.Zero, true);
+		#endregion
 
+		#region Private variables
 		/// <summary>
 		/// Private variables.
 		/// </summary>
 		private Stopwatch swStopwatch;
 		private string sFormatting;
+		#endregion
 
+		#region Object constructor
 		/// <summary>
 		/// Constructor.
 		/// </summary>
@@ -35,7 +40,9 @@ namespace cssbhop
 				this.swStopwatch.Start();
 			}
 		}
+		#endregion
 
+		#region Overrides
 		/// <summary>
 		/// Changes the {ms} in the formatting rules to the amount of miliseconds passed and resets it.
 		/// 
@@ -48,7 +55,9 @@ namespace cssbhop
 
 			return sFormatting.Replace("{ms}", sTimeElapsed);
 		}
+		#endregion
 
+		#region IDisposable support
 		/// <summary>
 		/// Dispose the monitor.
 		/// </summary>
@@ -81,5 +90,6 @@ namespace cssbhop
 		{
 			this.Dispose(false);
 		}
+		#endregion
 	}
 }
