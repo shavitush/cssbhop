@@ -1,12 +1,21 @@
-﻿using System.Diagnostics;
+﻿using Microsoft.Win32.SafeHandles;
+using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace cssbhop
 {
 	/// <summary>
 	/// Extends the Stopwatch class for our purposes.
 	/// </summary>
-	class Monitor : Stopwatch
+	class Monitor : Stopwatch, IDisposable
 	{
+		/// <summary>
+		/// Dispose logic.
+		/// </summary>
+		private bool disposed = false;
+		private SafeHandle handle = new SafeFileHandle(IntPtr.Zero, true);
+
 		/// <summary>
 		/// Private variables.
 		/// </summary>
@@ -38,6 +47,39 @@ namespace cssbhop
 			this.swStopwatch.Reset();
 
 			return sFormatting.Replace("{ms}", sTimeElapsed);
+		}
+
+		/// <summary>
+		/// Dispose the monitor.
+		/// </summary>
+		public void Dispose()
+		{
+			this.Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		/// <summary>
+		/// Disposal implementation.
+		/// </summary>
+		/// <param name="disposing">Are we currently disposing?</param>
+		protected virtual void Dispose(bool disposing)
+		{
+			if(this.disposed)
+			{
+				return;
+			}
+
+			if(disposing)
+			{
+				this.handle.Dispose();
+			}
+			
+			disposed = true;
+		}
+
+		~Monitor()
+		{
+			this.Dispose(false);
 		}
 	}
 }
