@@ -254,7 +254,7 @@ namespace cssbhop
 		{
 			if(!this.Running)
 			{
-				Console.WriteLine("\n\t- Detected game closing. Cheat shut down.");
+				Console.WriteLine(Environment.NewLine + "\t- Detected game closing. Cheat shut down.");
 
 				this.Thread.Abort();
 				this.keepAlive.Close();
@@ -518,7 +518,7 @@ namespace cssbhop
 
 				catch(Exception ex)
 				{
-					Console.WriteLine($"Faced an {ex.ToString()} while aborting threads: {ex.Message}");
+					Console.WriteLine($"Faced an exception: ({ex.ToString()}) while aborting threads: {ex.Message}");
 				}
 			}
 

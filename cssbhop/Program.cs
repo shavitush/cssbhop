@@ -31,7 +31,7 @@ namespace cssbhop
 
 			Game = new GameProcess();
 
-			Console.Title = string.Format("Autobhop tool ~ {0}", General.Version);
+			Console.Title = $"Autobhop tool ~ {General.Version}";
 			Console.ForegroundColor = ConsoleColor.Cyan;
 			Console.WriteLine($"https://github.com/{General.Repository}" + Environment.NewLine);
 			AutoUpdater.StartUpdate();
@@ -44,7 +44,7 @@ namespace cssbhop
 				{
 					if(process.MainModule.FileName.Contains("hl2.exe"))
 					{
-						using(ManagementObjectSearcher searcher = new ManagementObjectSearcher("SELECT CommandLine FROM Win32_Process WHERE ProcessId = " + process.Id))
+						using(ManagementObjectSearcher searcher = new ManagementObjectSearcher($"SELECT CommandLine FROM Win32_Process WHERE ProcessId = {process.Id}"))
 						{
 							foreach(ManagementObject manager in searcher.Get())
 							{
@@ -64,19 +64,19 @@ namespace cssbhop
 							if(module.ModuleName.Equals("client.dll"))
 							{
 								Game.ClientDLL = (int)module.BaseAddress;
-								Console.WriteLine("client.dll ~ 0x{0}", Game.ClientDLL.ToString("X"));
+								Console.WriteLine("client.dll ~ 0x" + Game.ClientDLL.ToString("X"));
 							}
 
 							else if(module.ModuleName.Equals("vguimatsurface.dll"))
 							{
 								Game.VGUIDLL = (int)module.BaseAddress;
-								Console.WriteLine("vguimatsurface.dll ~ 0x{0}", Game.VGUIDLL.ToString("X"));
+								Console.WriteLine("vguimatsurface.dll ~ 0x" + Game.VGUIDLL.ToString("X"));
 							}
 						}
 
 						Game.LocalPlayerAddress = Game.ReadInt(Game.ClientDLL + Offsets.LocalPlayer);
 
-						Console.WriteLine("\nFound hl2.exe ({0} ~ PID {1})", Game.Name, Game.ProcessID);
+						Console.WriteLine(Environment.NewLine + $"Found hl2.exe ({Game.Name} ~ PID {Game.ProcessID})");
 
 						if(!Game.Insecure)
 						{
