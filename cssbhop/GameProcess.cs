@@ -506,8 +506,20 @@ namespace cssbhop
 			if(disposing)
 			{
 				this.handle.Dispose();
+				this.keepAlive?.Close();
 				this.keepAlive.Dispose();
 				this.Process.Dispose();
+				this.monitor.Dispose();
+
+				try
+				{
+					this.Thread?.Abort();
+				}
+
+				catch(Exception ex)
+				{
+					Console.WriteLine($"Faced an {ex.ToString()} while aborting threads: {ex.Message}");
+				}
 			}
 
 			disposed = true;
