@@ -120,7 +120,7 @@ namespace cssbhop
 		/// <summary>
 		/// Keep-alive thread. (Is the game closed?)
 		/// </summary>
-		public System.Timers.Timer KeepAlive
+		private System.Timers.Timer keepAlive
 		{
 			get;
 			set;
@@ -166,10 +166,10 @@ namespace cssbhop
 			this.Thread.Start();
 
 			// Starts the keep-alive timer, to make sure the game is open.
-			this.KeepAlive = new System.Timers.Timer();
-			this.KeepAlive.Elapsed += new ElapsedEventHandler(this.onTimedEvent);
-			this.KeepAlive.Interval = 2500;
-			this.KeepAlive.Enabled = true;
+			this.keepAlive = new System.Timers.Timer();
+			this.keepAlive.Elapsed += new ElapsedEventHandler(this.onTimedEvent);
+			this.keepAlive.Interval = 2500;
+			this.keepAlive.Enabled = true;
 		}
 
 		/// <summary>
@@ -180,7 +180,7 @@ namespace cssbhop
 			try
 			{
 				this.Thread.Abort();
-				this.KeepAlive.Close();
+				this.keepAlive.Close();
 			}
 
 			catch(Exception)
@@ -257,7 +257,7 @@ namespace cssbhop
 				Console.WriteLine("\n\t- Detected game closing. Cheat shut down.");
 
 				this.Thread.Abort();
-				this.KeepAlive.Close();
+				this.keepAlive.Close();
 			}
 		}
 
@@ -506,6 +506,8 @@ namespace cssbhop
 			if(disposing)
 			{
 				this.handle.Dispose();
+				this.keepAlive.Dispose();
+				this.Process.Dispose();
 			}
 
 			disposed = true;
