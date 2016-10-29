@@ -6,6 +6,7 @@
 	/// </summary>
 	class Offsets
 	{
+		#region Source Engine enumerators
 		// Taken from SourceMod (addons/sourcemod/scripting/include/entity_prop_stocks.inc).
 		public enum MoveType
 		{
@@ -22,7 +23,9 @@
 			MOVETYPE_OBSERVER,          /**< Observer movement, depends on player's observer mode */
 			MOVETYPE_CUSTOM             /**< Allows the entity to describe its own physics */
 		};
+		#endregion
 
+		#region Memory addresses
 		/// <summary>
 		/// client.dll + this is the player struct.
 		/// </summary>
@@ -42,7 +45,9 @@
 		/// Is the chat open?
 		/// </summary>
 		public const int ChatOpen = 0x106813B4;
+		#endregion
 
+		#region Memory offsets
 		/// <summary>
 		/// Life status; 25600 is alive.
 		/// </summary>
@@ -72,5 +77,6 @@
 		/// Ground entity. -1 means not on ground, other values are brush entities.
 		/// </summary>
 		public const int m_hGroundEntity = 0x254;
+		#endregion
 	}
 }

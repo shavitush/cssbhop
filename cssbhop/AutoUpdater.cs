@@ -8,6 +8,7 @@ namespace cssbhop
 {
 	public class AutoUpdater
 	{
+		#region Object constructor
 		/// <summary>
 		/// Starts the update thread.
 		/// </summary>
@@ -16,7 +17,9 @@ namespace cssbhop
 			Thread tUpdateThread = new Thread(new ThreadStart(UpdateThread));
 			tUpdateThread.Start();
 		}
+		#endregion
 
+		#region Object methods
 		/// <summary>
 		/// Checks if there's a pending update.
 		/// </summary>
@@ -24,7 +27,7 @@ namespace cssbhop
 		{
 			try
 			{
-				HttpWebRequest Request = WebRequest.Create("https://api.github.com/repos/shavitush/cssbhop/releases/latest") as HttpWebRequest;
+				HttpWebRequest Request = WebRequest.Create($"https://api.github.com/repos/{General.Repository}/releases/latest") as HttpWebRequest;
 				Request.UserAgent = "cssbhop";
 				Request.Method = "GET";
 
@@ -51,5 +54,6 @@ namespace cssbhop
 				Program.UpdateNeeded = false;
 			}
 		}
+		#endregion
 	}
 }

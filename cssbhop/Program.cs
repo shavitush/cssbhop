@@ -8,9 +8,12 @@ namespace cssbhop
 {
 	public class Program
 	{
+		#region General variables
 		private static GameProcess Game = null;
 		public static bool UpdateNeeded = false;
+		#endregion
 
+		#region Startup method
 		public static void Main(string[] args)
 		{
 			Monitor monitor = new Monitor("Time it took to execute threads: {ms}ms", true);
@@ -30,7 +33,7 @@ namespace cssbhop
 
 			Console.Title = string.Format("Autobhop tool ~ {0}", General.Version);
 			Console.ForegroundColor = ConsoleColor.Cyan;
-			Console.WriteLine("https://github.com/shavitush/cssbhop" + Environment.NewLine);
+			Console.WriteLine($"https://github.com/{General.Repository}" + Environment.NewLine);
 			AutoUpdater.StartUpdate();
 
 			bool bFound = false;
@@ -129,7 +132,7 @@ namespace cssbhop
 				{
 					if(UpdateNeeded)
 					{
-						Process.Start("https://github.com/shavitush/cssbhop/releases/latest");
+						Process.Start($"https://github.com/{General.Repository}/releases/latest");
 					}
 
 					else
@@ -148,5 +151,6 @@ namespace cssbhop
 
 			Game.KillThreads();
 		}
+		#endregion
 	}
 }
