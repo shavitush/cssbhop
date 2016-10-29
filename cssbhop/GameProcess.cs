@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32.SafeHandles;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -9,7 +10,7 @@ using System.Windows.Forms;
 
 namespace cssbhop
 {
-	class GameProcess
+	class GameProcess : IDisposable
 	{
 		/// <summary>
 		/// A value to know when memory reads fail.
@@ -128,7 +129,7 @@ namespace cssbhop
 		/// <summary>
 		/// Performance monitor.
 		/// </summary>
-		private Monitor Monitor
+		private Monitor monitor
 		{
 			get;
 			set;
@@ -137,7 +138,7 @@ namespace cssbhop
 		/// <summary>
 		/// List of the last performance measurements.
 		/// </summary>
-		private List<long> MonitorList
+		private List<long> monitorList
 		{
 			get;
 			set;
@@ -150,8 +151,8 @@ namespace cssbhop
 		{
 			if(General.Monitoring)
 			{
-				this.Monitor = new Monitor(string.Empty);
-				this.MonitorList = new List<long>();
+				this.monitor = new Monitor(string.Empty);
+				this.monitorList = new List<long>();
 			}
 		}
 
@@ -161,12 +162,12 @@ namespace cssbhop
 		public void StartThread()
 		{
 			// Starts the cheat thread.
-			this.Thread = new Thread(new ThreadStart(this.CheatTread));
+			this.Thread = new Thread(new ThreadStart(this.cheatTread));
 			this.Thread.Start();
 
 			// Starts the keep-alive timer, to make sure the game is open.
 			this.KeepAlive = new System.Timers.Timer();
-			this.KeepAlive.Elapsed += new ElapsedEventHandler(this.OnTimedEvent);
+			this.KeepAlive.Elapsed += new ElapsedEventHandler(this.onTimedEvent);
 			this.KeepAlive.Interval = 2500;
 			this.KeepAlive.Enabled = true;
 		}
@@ -191,22 +192,22 @@ namespace cssbhop
 		/// <summary>
 		/// The cheat thread itself.
 		/// </summary>
-		private void CheatTread()
+		private void cheatTread()
 		{
 			ulong i = 0;
 
 			while(true)
 			{
-				this.Monitor?.Start();
+				this.monitor?.Start();
 
 				if((++i % 1000) == 0)
 				{
 					this.LocalPlayerAddress = this.ReadInt(this.ClientDLL + Offsets.LocalPlayer);
 
-					if(this.MonitorList?.Count > 0)
+					if(this.monitorList?.Count > 0)
 					{
-						Console.WriteLine("Last 1000 actions averaged at {0}ms.", Convert.ToInt64(this.MonitorList.Average()));
-						this.MonitorList.Clear();
+						Console.WriteLine("Last 1000 actions averaged at {0}ms.", Convert.ToInt64(this.monitorList.Average()));
+						this.monitorList.Clear();
 					}
 				}
 
@@ -229,9 +230,9 @@ namespace cssbhop
 
 				if((!this.CanJump && !this.InWater) || !this.Alive || this.Team < 2 || this.Paused)
 				{
-					this.Monitor?.Stop();
-					this.MonitorList?.Add(this.Monitor.ElapsedMilliseconds);
-					this.Monitor?.Reset();
+					this.monitor?.Stop();
+					this.monitorList?.Add(this.monitor.ElapsedMilliseconds);
+					this.monitor?.Reset();
 
 					continue;
 				}
@@ -249,7 +250,7 @@ namespace cssbhop
 		/// <summary>
 		/// Verifies if the game is open.
 		/// </summary>
-		private void OnTimedEvent(object source, ElapsedEventArgs e)
+		private void onTimedEvent(object source, ElapsedEventArgs e)
 		{
 			if(!this.Running)
 			{
@@ -474,5 +475,46 @@ namespace cssbhop
 				return (this.GroundEntity != -1 || this.OnLadder);
 			}
 		}
+
+		#region IDisposable support
+		/// <summary>
+		/// Dispose related variables.
+		/// </summary>
+		private bool disposed = false;
+		private SafeHandle handle = new SafeFileHandle(IntPtr.Zero, true);
+
+		/// <summary>
+		/// Dispose the monitor.
+		/// </summary>
+		public void Dispose()
+		{
+			this.Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		/// <summary>
+		/// Disposal implementation.
+		/// </summary>
+		/// <param name="disposing">Are we currently disposing?</param>
+		protected virtual void Dispose(bool disposing)
+		{
+			if(this.disposed)
+			{
+				return;
+			}
+
+			if(disposing)
+			{
+				this.handle.Dispose();
+			}
+
+			disposed = true;
+		}
+
+		~GameProcess()
+		{
+			this.Dispose(false);
+		}
+		#endregion
 	}
 }

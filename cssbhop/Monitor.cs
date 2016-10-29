@@ -10,14 +10,6 @@ namespace cssbhop
 	/// </summary>
 	class Monitor : Stopwatch, IDisposable
 	{
-		#region IDisposable variables
-		/// <summary>
-		/// Dispose logic.
-		/// </summary>
-		private bool disposed = false;
-		private SafeHandle handle = new SafeFileHandle(IntPtr.Zero, true);
-		#endregion
-
 		#region Private variables
 		/// <summary>
 		/// Private variables.
@@ -58,6 +50,12 @@ namespace cssbhop
 		#endregion
 
 		#region IDisposable support
+		/// <summary>
+		/// Dispose related variables.
+		/// </summary>
+		private bool disposed = false;
+		private SafeHandle handle = new SafeFileHandle(IntPtr.Zero, true);
+
 		/// <summary>
 		/// Dispose the monitor.
 		/// </summary>
