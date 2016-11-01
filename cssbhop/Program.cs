@@ -8,18 +8,22 @@ namespace cssbhop
 {
 	public class Program
 	{
+		#region Game related settings
+		private const string processName = "hl2.exe";
+		#endregion
+
 		#region General variables
-		private static GameProcess Game = null;
+		private static GameProcess game = null;
 		public static bool UpdateNeeded = false;
 		#endregion
 
 		#region Startup method
 		public static void Main(string[] args)
 		{
-			Monitor monitor = new Monitor("Time it took to execute threads: {ms}ms", true);
+			var monitor = new Monitor("Time it took to execute threads: {ms}ms", true);
 			monitor?.Start();
 
-			OptionSet options = new OptionSet()
+			var options = new OptionSet()
 				.Add("monitor|monitoring", "Show how long it takes to execute stuff.",
 				(string dummy) =>
 				{
@@ -29,7 +33,7 @@ namespace cssbhop
 
 			options.Parse(args);
 
-			Game = new GameProcess();
+			game = new GameProcess();
 
 			Console.Title = $"Autobhop tool ~ {General.Version}";
 			Console.ForegroundColor = ConsoleColor.Cyan;
@@ -38,57 +42,58 @@ namespace cssbhop
 
 			bool bFound = false;
 
-			foreach(Process process in Process.GetProcesses())
+			foreach(var process in Process.GetProcesses())
 			{
 				try
 				{
-					if(process.MainModule.FileName.Contains("hl2.exe"))
+					if(process.MainModule.ModuleName.Equals(processName))
 					{
-						using(ManagementObjectSearcher searcher = new ManagementObjectSearcher($"SELECT CommandLine FROM Win32_Process WHERE ProcessId = {process.Id}"))
+						using(var searcher = new ManagementObjectSearcher($"SELECT CommandLine FROM Win32_Process WHERE ProcessId = {process.Id}"))
 						{
-							foreach(ManagementObject manager in searcher.Get())
+							foreach(var manager in searcher.Get())
 							{
-								Game.CommandLine += manager["CommandLine"] + " ";
+								game.CommandLine += manager["CommandLine"] + " ";
 							}
 						}
 
-						Game.Name = process.MainWindowTitle;
-						Game.Path = process.MainModule.FileName;
-						Game.Process = process;
-						Game.Insecure = Game.CommandLine.Contains("-insecure");
-						Game.ProcessID = process.Id;
-						Game.ProcessHandler = process.Handle;
+						game.Name = process.MainWindowTitle;
+						game.Path = process.MainModule.FileName;
+						game.ProcessName = process.MainModule.ModuleName;
+						game.Process = process;
+						game.Insecure = game.CommandLine.Contains("-insecure");
+						game.ProcessID = process.Id;
+						game.ProcessHandler = process.Handle;
 
-						foreach(ProcessModule module in Game.Process.Modules)
+						foreach(ProcessModule module in game.Process.Modules)
 						{
 							if(module.ModuleName.Equals("client.dll"))
 							{
-								Game.ClientDLL = (int)module.BaseAddress;
-								Console.WriteLine("client.dll ~ 0x" + Game.ClientDLL.ToString("X"));
+								game.ClientDLL = (int)module.BaseAddress;
+								Console.WriteLine("client.dll ~ 0x" + game.ClientDLL.ToString("X"));
 							}
 
 							else if(module.ModuleName.Equals("vguimatsurface.dll"))
 							{
-								Game.VGUIDLL = (int)module.BaseAddress;
-								Console.WriteLine("vguimatsurface.dll ~ 0x" + Game.VGUIDLL.ToString("X"));
+								game.VGUIDLL = (int)module.BaseAddress;
+								Console.WriteLine("vguimatsurface.dll ~ 0x" + game.VGUIDLL.ToString("X"));
 							}
 						}
 
-						Game.LocalPlayerAddress = Game.ReadInt(Game.ClientDLL + Offsets.LocalPlayer);
+						game.LocalPlayerAddress = game.ReadInt(game.ClientDLL + Offsets.LocalPlayer);
 
-						Console.WriteLine(Environment.NewLine + $"Found hl2.exe ({Game.Name} ~ PID {Game.ProcessID})");
+						Console.WriteLine(Environment.NewLine + $"Found {game.ProcessName} ({game.Name} ~ PID {game.ProcessID})");
 
-						if(!Game.Insecure)
+						if(!game.Insecure)
 						{
 							Console.WriteLine("\t- Running without -insecure, terminating game to prevent VAC bans.");
 
-							Game.Process.Kill();
-							Game.Process.WaitForExit();
+							game.Process.Kill();
+							game.Process.WaitForExit();
 						}
 
 						else
 						{
-							Game.StartThread();
+							game.StartThread();
 						}
 
 						bFound = true;
@@ -109,10 +114,10 @@ namespace cssbhop
 
 			if(!bFound)
 			{
-				Console.WriteLine("ERROR: Could not find hl2.exe");
+				Console.WriteLine($"ERROR: Could not find {processName}");
 			}
 
-			else if(!Game.Insecure)
+			else if(!game.Insecure)
 			{
 				Console.WriteLine("\t- ERROR: Running without -insecure.");
 			}
@@ -149,7 +154,7 @@ namespace cssbhop
 				}
 			}
 
-			Game.KillThreads();
+			game.KillThreads();
 		}
 		#endregion
 	}

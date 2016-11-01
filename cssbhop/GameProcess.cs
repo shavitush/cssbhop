@@ -27,13 +27,23 @@ namespace cssbhop
 		}
 
 		/// <summary>
-		/// Path to hl2.exe.
+		/// Path to the game's process.
 		/// </summary>
 		public string Path
 		{
 			get;
 			set;
 		}
+
+		/// <summary>
+		/// File name for the game.
+		/// For example, hl2.exe for most Source Engine games.
+		/// </summary>
+		public string ProcessName
+		{
+			get;
+			set;
+		} = "<PROCESS>";
 
 		/// <summary>
 		/// Command line parameters.
@@ -270,7 +280,7 @@ namespace cssbhop
 			{
 				if(this.Process == null)
 				{
-					throw new ArgumentNullException("process");
+					throw new NullReferenceException($"Unable to find the process {this.ProcessName} (PID: {this.ProcessID}).");
 				}
 
 				try
@@ -327,7 +337,7 @@ namespace cssbhop
 		public int ReadInt(int address)
 		{
 			byte[] bData = new byte[4];
-			IntPtr ipBytesRead = IntPtr.Zero;
+			var ipBytesRead = IntPtr.Zero;
 
 			if(!ReadProcessMemory(this.ProcessHandler, (IntPtr)address, bData, bData.Length, out ipBytesRead) || ipBytesRead.ToInt32() != 4)
 			{
@@ -345,7 +355,7 @@ namespace cssbhop
 		public bool WriteInt(int address, int value)
 		{
 			byte[] bData = BitConverter.GetBytes(value);
-			IntPtr ipBytesWritten = IntPtr.Zero;
+			var ipBytesWritten = IntPtr.Zero;
 
 			if(!WriteProcessMemory(this.ProcessHandler, (IntPtr)address, bData, bData.Length, out ipBytesWritten) || ipBytesWritten.ToInt32() != 4)
 			{
