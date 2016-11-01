@@ -37,7 +37,6 @@ namespace cssbhop
 		#region Overrides
 		/// <summary>
 		/// Changes the {ms} in the formatting rules to the amount of miliseconds passed and resets it.
-		/// 
 		/// </summary>
 		/// <returns></returns>
 		public override string ToString()

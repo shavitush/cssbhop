@@ -14,7 +14,7 @@ namespace cssbhop
 		/// </summary>
 		public static void StartUpdate()
 		{
-			Thread tUpdateThread = new Thread(new ThreadStart(UpdateThread));
+			var tUpdateThread = new Thread(new ThreadStart(updateThread));
 			tUpdateThread.Start();
 		}
 		#endregion
@@ -23,15 +23,15 @@ namespace cssbhop
 		/// <summary>
 		/// Checks if there's a pending update.
 		/// </summary>
-		public static void UpdateThread()
+		private static void updateThread()
 		{
 			try
 			{
-				HttpWebRequest Request = WebRequest.Create($"https://api.github.com/repos/{General.Repository}/releases/latest") as HttpWebRequest;
+				var Request = WebRequest.Create($"https://api.github.com/repos/{General.Repository}/releases/latest") as HttpWebRequest;
 				Request.UserAgent = "cssbhop";
 				Request.Method = "GET";
 
-				using(StreamReader ResponseReader = new StreamReader(Request.GetResponse().GetResponseStream()))
+				using(var ResponseReader = new StreamReader(Request.GetResponse().GetResponseStream()))
 				{
 					dynamic dReleaseInfo = new JavaScriptSerializer().Deserialize<dynamic>(ResponseReader.ReadToEnd());
 					float fLatestVersion = float.Parse(dReleaseInfo["tag_name"]);
