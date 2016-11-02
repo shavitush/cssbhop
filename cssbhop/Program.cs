@@ -9,11 +9,11 @@ namespace cssbhop
 	public class Program
 	{
 		#region Game related settings
-		private const string processName = "hl2.exe";
+		private const string ProcessName = "hl2.exe";
 		#endregion
 
 		#region General variables
-		private static GameProcess game = null;
+		private static GameProcess _game;
 		public static bool UpdateNeeded = false;
 		#endregion
 
@@ -21,11 +21,11 @@ namespace cssbhop
 		public static void Main(string[] args)
 		{
 			var monitor = new Monitor("Time it took to execute threads: {ms}ms", true);
-			monitor?.Start();
+			monitor.Start();
 
 			var options = new OptionSet()
 				.Add("monitor|monitoring", "Show how long it takes to execute stuff.",
-				(string dummy) =>
+				dummy =>
 				{
 					General.Monitoring = true;
 					Console.WriteLine("Performance monitoring enabled.");
@@ -33,7 +33,7 @@ namespace cssbhop
 
 			options.Parse(args);
 
-			game = new GameProcess();
+			_game = new GameProcess();
 
 			Console.Title = $"Autobhop tool ~ {General.Version}";
 			Console.ForegroundColor = ConsoleColor.Cyan;
@@ -46,58 +46,60 @@ namespace cssbhop
 			{
 				try
 				{
-					if(process.MainModule.ModuleName.Equals(processName))
+					if(!process.MainModule.ModuleName.Equals(ProcessName))
 					{
-						using(var searcher = new ManagementObjectSearcher($"SELECT CommandLine FROM Win32_Process WHERE ProcessId = {process.Id}"))
-						{
-							foreach(var manager in searcher.Get())
-							{
-								game.CommandLine += manager["CommandLine"] + " ";
-							}
-						}
-
-						game.Name = process.MainWindowTitle;
-						game.Path = process.MainModule.FileName;
-						game.ProcessName = process.MainModule.ModuleName;
-						game.Process = process;
-						game.Insecure = game.CommandLine.Contains("-insecure");
-						game.ProcessID = process.Id;
-						game.ProcessHandler = process.Handle;
-
-						foreach(ProcessModule module in game.Process.Modules)
-						{
-							if(module.ModuleName.Equals("client.dll"))
-							{
-								game.ClientDLL = (int)module.BaseAddress;
-								Console.WriteLine("client.dll ~ 0x" + game.ClientDLL.ToString("X"));
-							}
-
-							else if(module.ModuleName.Equals("vguimatsurface.dll"))
-							{
-								game.VGUIDLL = (int)module.BaseAddress;
-								Console.WriteLine("vguimatsurface.dll ~ 0x" + game.VGUIDLL.ToString("X"));
-							}
-						}
-
-						game.LocalPlayerAddress = game.ReadInt(game.ClientDLL + Offsets.LocalPlayer);
-
-						Console.WriteLine(Environment.NewLine + $"Found {game.ProcessName} ({game.Name} ~ PID {game.ProcessID})");
-
-						if(!game.Insecure)
-						{
-							Console.WriteLine("\t- Running without -insecure, terminating game to prevent VAC bans.");
-
-							game.Process.Kill();
-							game.Process.WaitForExit();
-						}
-
-						else
-						{
-							game.StartThread();
-						}
-
-						bFound = true;
+						continue;
 					}
+
+					using(var searcher = new ManagementObjectSearcher($"SELECT CommandLine FROM Win32_Process WHERE ProcessId = {process.Id}"))
+					{
+						foreach(var manager in searcher.Get())
+						{
+							_game.CommandLine += manager["CommandLine"] + " ";
+						}
+					}
+
+					_game.Name = process.MainWindowTitle;
+					_game.Path = process.MainModule.FileName;
+					_game.ProcessName = process.MainModule.ModuleName;
+					_game.Process = process;
+					_game.Insecure = _game.CommandLine.Contains("-insecure");
+					_game.ProcessId = process.Id;
+					_game.ProcessHandler = process.Handle;
+
+					foreach(ProcessModule module in _game.Process.Modules)
+					{
+						if(module.ModuleName.Equals("client.dll"))
+						{
+							_game.ClientDll = (int)module.BaseAddress;
+							Console.WriteLine("client.dll ~ 0x" + _game.ClientDll.ToString("X"));
+						}
+
+						else if(module.ModuleName.Equals("vguimatsurface.dll"))
+						{
+							_game.Vguidll = (int)module.BaseAddress;
+							Console.WriteLine("vguimatsurface.dll ~ 0x" + _game.Vguidll.ToString("X"));
+						}
+					}
+
+					_game.LocalPlayerAddress = _game.ReadInt(_game.ClientDll + Offsets.LocalPlayer);
+
+					Console.WriteLine(Environment.NewLine + $"Found {_game.ProcessName} ({_game.Name} ~ PID {_game.ProcessId})");
+
+					if(!_game.Insecure)
+					{
+						Console.WriteLine("\t- Running without -insecure, terminating game to prevent VAC bans.");
+
+						_game.Process.Kill();
+						_game.Process.WaitForExit();
+					}
+
+					else
+					{
+						_game.StartThread();
+					}
+
+					bFound = true;
 				}
 
 				catch(Win32Exception exception)
@@ -114,10 +116,10 @@ namespace cssbhop
 
 			if(!bFound)
 			{
-				Console.WriteLine($"ERROR: Could not find {processName}");
+				Console.WriteLine($"ERROR: Could not find {ProcessName}");
 			}
 
-			else if(!game.Insecure)
+			else if(!_game.Insecure)
 			{
 				Console.WriteLine("\t- ERROR: Running without -insecure.");
 			}
@@ -154,7 +156,7 @@ namespace cssbhop
 				}
 			}
 
-			game.KillThreads();
+			_game.KillThreads();
 		}
 		#endregion
 	}

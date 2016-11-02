@@ -1,5 +1,4 @@
-﻿using Microsoft.Win32.SafeHandles;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -7,15 +6,17 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Timers;
 using System.Windows.Forms;
+using Microsoft.Win32.SafeHandles;
+using Timer = System.Timers.Timer;
 
 namespace cssbhop
 {
-	class GameProcess : IDisposable
+	internal class GameProcess : IDisposable
 	{
 		/// <summary>
 		/// A value to know when memory reads fail.
 		/// </summary>
-		public const int MEMORY_READ_FAILED = int.MinValue;
+		public const int MemoryReadFailed = int.MinValue;
 
 		/// <summary>
 		/// Window title for the game.
@@ -75,7 +76,7 @@ namespace cssbhop
 		/// <summary>
 		/// Process ID.
 		/// </summary>
-		public int ProcessID
+		public int ProcessId
 		{
 			get;
 			set;
@@ -93,7 +94,7 @@ namespace cssbhop
 		/// <summary>
 		/// Address for the client.dll module.
 		/// </summary>
-		public int ClientDLL
+		public int ClientDll
 		{
 			get;
 			set;
@@ -102,7 +103,7 @@ namespace cssbhop
 		/// <summary>
 		/// Address for the vguimatsurface.dll module.
 		/// </summary>
-		public int VGUIDLL
+		public int Vguidll
 		{
 			get;
 			set;
@@ -125,45 +126,45 @@ namespace cssbhop
 		{
 			get;
 			set;
-		} = null;
+		}
 
 		/// <summary>
 		/// Keep-alive thread. (Is the game closed?)
 		/// </summary>
-		private System.Timers.Timer keepAlive
+		private Timer KeepAlive
 		{
 			get;
 			set;
-		} = null;
+		}
 
 		/// <summary>
 		/// Performance monitor.
 		/// </summary>
-		private Monitor monitor
+		private Monitor Monitor
 		{
 			get;
-			set;
-		} = null;
+		}
 
 		/// <summary>
 		/// List of the last performance measurements.
 		/// </summary>
-		private List<long> monitorList
+		private List<long> MonitorList
 		{
 			get;
-			set;
-		} = null;
+		}
 
 		/// <summary>
 		/// Class constructor.
 		/// </summary>
 		public GameProcess()
 		{
-			if(General.Monitoring)
+			if(!General.Monitoring)
 			{
-				this.monitor = new Monitor(string.Empty);
-				this.monitorList = new List<long>();
+				return;
 			}
+
+			Monitor = new Monitor(string.Empty);
+			MonitorList = new List<long>();
 		}
 
 		/// <summary>
@@ -172,14 +173,14 @@ namespace cssbhop
 		public void StartThread()
 		{
 			// Starts the cheat thread.
-			this.Thread = new Thread(new ThreadStart(this.cheatTread));
-			this.Thread.Start();
+			Thread = new Thread(CheatTread);
+			Thread.Start();
 
 			// Starts the keep-alive timer, to make sure the game is open.
-			this.keepAlive = new System.Timers.Timer();
-			this.keepAlive.Elapsed += new ElapsedEventHandler(this.onTimedEvent);
-			this.keepAlive.Interval = 2500;
-			this.keepAlive.Enabled = true;
+			KeepAlive = new Timer();
+			KeepAlive.Elapsed += OnTimedEvent;
+			KeepAlive.Interval = 2500;
+			KeepAlive.Enabled = true;
 		}
 
 		/// <summary>
@@ -189,8 +190,8 @@ namespace cssbhop
 		{
 			try
 			{
-				this.Thread.Abort();
-				this.keepAlive.Close();
+				Thread.Abort();
+				KeepAlive.Close();
 			}
 
 			catch(Exception)
@@ -202,22 +203,22 @@ namespace cssbhop
 		/// <summary>
 		/// The cheat thread itself.
 		/// </summary>
-		private void cheatTread()
+		private void CheatTread()
 		{
 			ulong i = 0;
 
 			while(true)
 			{
-				this.monitor?.Start();
+				Monitor?.Start();
 
 				if((++i % 1000) == 0)
 				{
-					this.LocalPlayerAddress = this.ReadInt(this.ClientDLL + Offsets.LocalPlayer);
+					LocalPlayerAddress = ReadInt(ClientDll + Offsets.LocalPlayer);
 
-					if(this.monitorList?.Count > 0)
+					if(MonitorList?.Count > 0)
 					{
-						Console.WriteLine("Last 1000 actions averaged at {0}ms.", Convert.ToInt64(this.monitorList.Average()));
-						this.monitorList.Clear();
+						Console.WriteLine("Last 1000 actions averaged at {0}ms.", Convert.ToInt64(MonitorList.Average()));
+						MonitorList.Clear();
 					}
 				}
 
@@ -235,20 +236,23 @@ namespace cssbhop
 
 				if(bSpaceHeld)
 				{
-					this.WriteInt(this.ClientDLL + Offsets.JumpAddress, 4);
+					WriteInt(ClientDll + Offsets.JumpAddress, 4);
 				}
 
-				if((!this.CanJump && !this.InWater) || !this.Alive || this.Team < 2 || this.Paused)
+				if((!CanJump && !InWater) || !Alive || Team < 2 || Paused)
 				{
-					this.monitor?.Stop();
-					this.monitorList?.Add(this.monitor.ElapsedMilliseconds);
-					this.monitor?.Reset();
+					if(Monitor != null)
+					{
+						Monitor.Stop();
+						MonitorList?.Add(Monitor.ElapsedMilliseconds);
+						Monitor.Reset();
+					}
 
 					continue;
 				}
 
 				// 5 - jumping, 4 - not
-				this.WriteInt(this.ClientDLL + Offsets.JumpAddress, 5);
+				WriteInt(ClientDll + Offsets.JumpAddress, 5);
 
 				Thread.Sleep(25);
 #if DEBUG
@@ -260,14 +264,14 @@ namespace cssbhop
 		/// <summary>
 		/// Verifies if the game is open.
 		/// </summary>
-		private void onTimedEvent(object source, ElapsedEventArgs e)
+		private void OnTimedEvent(object source, ElapsedEventArgs e)
 		{
-			if(!this.Running)
+			if(!Running)
 			{
 				Console.WriteLine(Environment.NewLine + "\t- Detected game closing. Cheat shut down.");
 
-				this.Thread.Abort();
-				this.keepAlive.Close();
+				Thread.Abort();
+				KeepAlive.Close();
 			}
 		}
 
@@ -278,14 +282,14 @@ namespace cssbhop
 		{
 			get
 			{
-				if(this.Process == null)
+				if(Process == null)
 				{
-					throw new NullReferenceException($"Unable to find the process {this.ProcessName} (PID: {this.ProcessID}).");
+					throw new NullReferenceException($"Unable to find the process {ProcessName} (PID: {ProcessId}).");
 				}
 
 				try
 				{
-					Process.GetProcessById(this.ProcessID);
+					Process.GetProcessById(ProcessId);
 				}
 
 				catch(ArgumentException)
@@ -303,7 +307,7 @@ namespace cssbhop
 		/// <param name="vKey">Virtual key to check for.</param>
 		/// <returns>Key state.</returns>
 		[DllImport("user32.dll")]
-		static extern short GetAsyncKeyState(Keys vKey);
+		private static extern short GetAsyncKeyState(Keys vKey);
 
 		/// <summary>
 		/// http://www.pinvoke.net/default.aspx/kernel32.readprocessmemory
@@ -315,7 +319,7 @@ namespace cssbhop
 		/// <param name="lpNumberOfBytesRead">Reference to data we successfully read.</param>
 		/// <returns></returns>
 		[DllImport("kernel32.dll", SetLastError = true)]
-		static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [Out] byte[] lpBuffer, int dwSize, out IntPtr lpNumberOfBytesRead);
+		private static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, [Out] byte[] lpBuffer, int dwSize, out IntPtr lpNumberOfBytesRead);
 
 		/// <summary>
 		/// http://www.pinvoke.net/default.aspx/kernel32.readprocessmemory
@@ -323,11 +327,11 @@ namespace cssbhop
 		/// <param name="hProcess">Handler to process.</param>
 		/// <param name="lpBaseAddress">Addrress to write to.</param>
 		/// <param name="lpBuffer">Buffer that includes the data we want to write.</param>
-		/// <param name="dwSize">Size of the memory we write.</param>
-		/// <param name="lpNumberOfBytesRead">Reference to data we successfully wrote.</param>
+		/// <param name="nSize">Size of the memory we write.</param>
+		/// <param name="lpNumberOfBytesWritten">Reference to data we successfully wrote.</param>
 		/// <returns></returns>
 		[DllImport("kernel32.dll", SetLastError = true)]
-		static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int nSize, out IntPtr lpNumberOfBytesWritten);
+		private static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int nSize, out IntPtr lpNumberOfBytesWritten);
 
 		/// <summary>
 		/// Reads a memory value from a given address.
@@ -337,11 +341,11 @@ namespace cssbhop
 		public int ReadInt(int address)
 		{
 			byte[] bData = new byte[4];
-			var ipBytesRead = IntPtr.Zero;
+			IntPtr ipBytesRead;
 
-			if(!ReadProcessMemory(this.ProcessHandler, (IntPtr)address, bData, bData.Length, out ipBytesRead) || ipBytesRead.ToInt32() != 4)
+			if(!ReadProcessMemory(ProcessHandler, (IntPtr)address, bData, bData.Length, out ipBytesRead) || ipBytesRead.ToInt32() != 4)
 			{
-				return MEMORY_READ_FAILED;
+				return MemoryReadFailed;
 			}
 
 			return BitConverter.ToInt32(bData, 0);
@@ -351,13 +355,14 @@ namespace cssbhop
 		/// Writes a value to a specified memory address.
 		/// </summary>
 		/// <param name="address">Address to write to.</param>
+		/// <param name="value">Integer value to write.</param>
 		/// <returns>True if written or false if not.</returns>
 		public bool WriteInt(int address, int value)
 		{
 			byte[] bData = BitConverter.GetBytes(value);
-			var ipBytesWritten = IntPtr.Zero;
+			IntPtr ipBytesWritten;
 
-			if(!WriteProcessMemory(this.ProcessHandler, (IntPtr)address, bData, bData.Length, out ipBytesWritten) || ipBytesWritten.ToInt32() != 4)
+			if(!WriteProcessMemory(ProcessHandler, (IntPtr)address, bData, bData.Length, out ipBytesWritten) || ipBytesWritten.ToInt32() != 4)
 			{
 				return false;
 			}
@@ -368,137 +373,71 @@ namespace cssbhop
 		/// <summary>
 		/// Gets the player's health.
 		/// </summary>
-		public int Health
-		{
-			get
-			{
-				return this.ReadInt(this.LocalPlayerAddress + Offsets.m_iHealth);
-			}
-		}
+		public int Health => ReadInt(LocalPlayerAddress + Offsets.Health);
 
 		/// <summary>
 		/// Gets the player's team.
 		/// </summary>
-		public int Team
-		{
-			get
-			{
-				return this.ReadInt(this.LocalPlayerAddress + Offsets.m_iTeam);
-			}
-		}
+		public int Team => ReadInt(LocalPlayerAddress + Offsets.Team);
 
 		/// <summary>
 		/// Gets the player's movetype.
 		/// </summary>
-		public int MoveType
-		{
-			get
-			{
-				return this.ReadInt(this.LocalPlayerAddress + Offsets.m_MoveType);
-			}
-		}
+		public int MoveType => ReadInt(LocalPlayerAddress + Offsets.MoveType);
 
 		/// <summary>
 		/// Gets the lifestate, 25600 is alive.
 		/// </summary>
-		public int LifeState
-		{
-			get
-			{
-				return this.ReadInt(this.LocalPlayerAddress + Offsets.m_lifestate);
-			}
-		}
+		public int LifeState => ReadInt(LocalPlayerAddress + Offsets.Lifestate);
 
 		/// <summary>
 		/// Checks if the player is alive.
 		/// </summary>
-		public bool Alive
-		{
-			get
-			{
-				return (this.LifeState == 25600);
-			}
-		}
+		public bool Alive => (LifeState == 25600);
 
 		/// <summary>
 		/// Gets the player's ground entity.
 		/// </summary>
-		public int GroundEntity
-		{
-			get
-			{
-				return this.ReadInt(this.LocalPlayerAddress + Offsets.m_hGroundEntity);
-			}
-		}
+		public int GroundEntity => ReadInt(LocalPlayerAddress + Offsets.GroundEntity);
 
 		/// <summary>
 		/// Checks if the player is on a ladder.
 		/// </summary>
-		public bool OnLadder
-		{
-			get
-			{
-				return (this.MoveType == (int)Offsets.MoveType.MOVETYPE_LADDER);
-			}
-		}
+		public bool OnLadder => (MoveType == (int)Offsets.MoveTypes.MovetypeLadder);
 
 		/// <summary>
 		/// Gets the player's flags.
 		/// </summary>
-		public int Flags
-		{
-			get
-			{
-				return this.ReadInt(this.LocalPlayerAddress + Offsets.m_fFlags);
-			}
-		}
+		public int Flags => ReadInt(LocalPlayerAddress + Offsets.Flags);
 
 		/// <summary>
 		/// Is the player inside water?
 		/// </summary>
-		public bool InWater
-		{
-			get
-			{
-				return ((this.Flags & (1 << 9)) > 0);
-			}
-		}
+		public bool InWater => ((Flags & (1 << 9)) > 0);
 
 		/// <summary>
 		/// Is the game paused?
 		/// </summary>
-		public bool Paused
-		{
-			get
-			{
-				return (this.ReadInt(Offsets.ChatOpen) == 1 || this.ReadInt(this.VGUIDLL + Offsets.PauseMenu) == 1);
-			}
-		}
+		public bool Paused => (ReadInt(Offsets.ChatOpen) == 1 || ReadInt(Vguidll + Offsets.PauseMenu) == 1);
 
 		/// <summary>
 		/// Checks if the player is able to jump which is: either on ground, on ladder or waterlevel being 2 or higher.
 		/// </summary>
-		public bool CanJump
-		{
-			get
-			{
-				return (this.GroundEntity != -1 || this.OnLadder);
-			}
-		}
+		public bool CanJump => (GroundEntity != -1 || OnLadder);
 
 		#region IDisposable support
 		/// <summary>
 		/// Dispose related variables.
 		/// </summary>
-		private bool disposed = false;
-		private SafeHandle handle = new SafeFileHandle(IntPtr.Zero, true);
+		private bool _disposed;
+		private readonly SafeHandle _handle = new SafeFileHandle(IntPtr.Zero, true);
 
 		/// <summary>
 		/// Dispose the monitor.
 		/// </summary>
 		public void Dispose()
 		{
-			this.Dispose(true);
+			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
 
@@ -508,36 +447,36 @@ namespace cssbhop
 		/// <param name="disposing">Are we currently disposing?</param>
 		protected virtual void Dispose(bool disposing)
 		{
-			if(this.disposed)
+			if(_disposed)
 			{
 				return;
 			}
 
 			if(disposing)
 			{
-				this.handle.Dispose();
-				this.keepAlive?.Close();
-				this.keepAlive.Dispose();
-				this.Process.Dispose();
-				this.monitor.Dispose();
+				_handle.Dispose();
+				KeepAlive?.Close();
+				KeepAlive?.Dispose();
+				Process.Dispose();
+				Monitor.Dispose();
 
 				try
 				{
-					this.Thread?.Abort();
+					Thread?.Abort();
 				}
 
 				catch(Exception ex)
 				{
-					Console.WriteLine($"Faced an exception: ({ex.ToString()}) while aborting threads: {ex.Message}");
+					Console.WriteLine($"Faced an exception: ({ex}) while aborting threads: {ex.Message}");
 				}
 			}
 
-			disposed = true;
+			_disposed = true;
 		}
 
 		~GameProcess()
 		{
-			this.Dispose(false);
+			Dispose(false);
 		}
 		#endregion
 	}
