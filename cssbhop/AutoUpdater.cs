@@ -14,7 +14,7 @@ namespace cssbhop
 		/// </summary>
 		public static void StartUpdate()
 		{
-			var tUpdateThread = new Thread(new ThreadStart(updateThread));
+			var tUpdateThread = new Thread(UpdateThread);
 			tUpdateThread.Start();
 		}
 		#endregion
@@ -23,26 +23,30 @@ namespace cssbhop
 		/// <summary>
 		/// Checks if there's a pending update.
 		/// </summary>
-		private static void updateThread()
+		private static void UpdateThread()
 		{
 			try
 			{
-				var Request = WebRequest.Create($"https://api.github.com/repos/{General.Repository}/releases/latest") as HttpWebRequest;
-				Request.UserAgent = "cssbhop";
-				Request.Method = "GET";
+				var request = WebRequest.Create($"https://api.github.com/repos/{General.Repository}/releases/latest") as HttpWebRequest;
 
-				using(var ResponseReader = new StreamReader(Request.GetResponse().GetResponseStream()))
+				if(request != null)
 				{
-					dynamic dReleaseInfo = new JavaScriptSerializer().Deserialize<dynamic>(ResponseReader.ReadToEnd());
-					float fLatestVersion = float.Parse(dReleaseInfo["tag_name"]);
+					request.UserAgent = "cssbhop";
+					request.Method = "GET";
 
-					if(fLatestVersion > General.Version)
+					using(var responseReader = new StreamReader(request.GetResponse().GetResponseStream()))
 					{
-						Console.ForegroundColor = ConsoleColor.Cyan;
-						Console.WriteLine(Environment.NewLine + "--- There's a pending update ({0} -> {1})!{2}Write \"update\" to get started.", General.Version, fLatestVersion, Environment.NewLine);
-						Console.ForegroundColor = ConsoleColor.White;
+						dynamic dReleaseInfo = new JavaScriptSerializer().Deserialize<dynamic>(responseReader.ReadToEnd());
+						float fLatestVersion = float.Parse(dReleaseInfo["tag_name"]);
 
-						Program.UpdateNeeded = true;
+						if(fLatestVersion > General.Version)
+						{
+							Console.ForegroundColor = ConsoleColor.Cyan;
+							Console.WriteLine(Environment.NewLine + "--- There's a pending update ({0} -> {1})!{2}Write \"update\" to get started.", General.Version, fLatestVersion, Environment.NewLine);
+							Console.ForegroundColor = ConsoleColor.White;
+
+							Program.UpdateNeeded = true;
+						}
 					}
 				}
 			}

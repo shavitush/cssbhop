@@ -1,21 +1,21 @@
-﻿using Microsoft.Win32.SafeHandles;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
 
 namespace cssbhop
 {
 	/// <summary>
 	/// Extends the Stopwatch class for our purposes.
 	/// </summary>
-	class Monitor : Stopwatch, IDisposable
+	internal class Monitor : Stopwatch, IDisposable
 	{
 		#region Private variables
 		/// <summary>
 		/// Private variables.
 		/// </summary>
-		private Stopwatch swStopwatch;
-		private string sFormatting;
+		private readonly Stopwatch _swStopwatch;
+		private readonly string _sFormatting;
 		#endregion
 
 		#region Object constructor
@@ -24,12 +24,12 @@ namespace cssbhop
 		/// </summary>
 		public Monitor(string formatting, bool start = false)
 		{
-			this.sFormatting = formatting;
-			this.swStopwatch = new Stopwatch();
+			_sFormatting = formatting;
+			_swStopwatch = new Stopwatch();
 
 			if(start)
 			{
-				this.swStopwatch.Start();
+				_swStopwatch.Start();
 			}
 		}
 		#endregion
@@ -41,10 +41,10 @@ namespace cssbhop
 		/// <returns></returns>
 		public override string ToString()
 		{
-			string sTimeElapsed = this.swStopwatch.ElapsedMilliseconds.ToString();
-			this.swStopwatch.Reset();
+			string sTimeElapsed = _swStopwatch.ElapsedMilliseconds.ToString();
+			_swStopwatch.Reset();
 
-			return sFormatting.Replace("{ms}", sTimeElapsed);
+			return _sFormatting.Replace("{ms}", sTimeElapsed);
 		}
 		#endregion
 
@@ -52,15 +52,15 @@ namespace cssbhop
 		/// <summary>
 		/// Dispose related variables.
 		/// </summary>
-		private bool disposed = false;
-		private SafeHandle handle = new SafeFileHandle(IntPtr.Zero, true);
+		private bool _disposed;
+		private readonly SafeHandle _handle = new SafeFileHandle(IntPtr.Zero, true);
 
 		/// <summary>
 		/// Dispose the monitor.
 		/// </summary>
 		public void Dispose()
 		{
-			this.Dispose(true);
+			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
 
@@ -70,22 +70,22 @@ namespace cssbhop
 		/// <param name="disposing">Are we currently disposing?</param>
 		protected virtual void Dispose(bool disposing)
 		{
-			if(this.disposed)
+			if(_disposed)
 			{
 				return;
 			}
 
 			if(disposing)
 			{
-				this.handle.Dispose();
+				_handle.Dispose();
 			}
 			
-			disposed = true;
+			_disposed = true;
 		}
 
 		~Monitor()
 		{
-			this.Dispose(false);
+			Dispose(false);
 		}
 		#endregion
 	}
