@@ -29,7 +29,6 @@
 		#endregion
 
 		#region Memory offsets
-
 		/// <summary>
 		/// Life status; 25600 is alive.
 		/// </summary>
@@ -59,7 +58,6 @@
 		/// Ground entity. -1 means not on ground, other values are brush entities.
 		/// </summary>
 		public static int GroundEntity { get; } = 0x254;
-
 		#endregion
 	}
 }
