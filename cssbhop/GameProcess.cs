@@ -403,7 +403,7 @@ namespace cssbhop
 		/// <summary>
 		/// Checks if the player is on a ladder.
 		/// </summary>
-		public bool OnLadder => (MoveType == (int)Offsets.MoveTypes.MovetypeLadder);
+		public bool OnLadder => (MoveType == 9); // 9 is ladder!
 
 		/// <summary>
 		/// Gets the player's flags.
