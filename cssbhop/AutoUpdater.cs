@@ -49,7 +49,7 @@ namespace cssbhop
 
 			catch(Exception ex)
 			{
-				Console.WriteLine("ERROR: {0}", ex.Message);
+				Console.WriteLine($"ERROR: {ex.Message}");
 
 				Program.UpdateNeeded = false;
 			}
