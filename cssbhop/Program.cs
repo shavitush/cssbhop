@@ -51,7 +51,7 @@ namespace cssbhop
 						continue;
 					}
 
-					using(var searcher = new ManagementObjectSearcher($"SELECT CommandLine FROM Win32_Process WHERE ProcessId = {process.Id}"))
+					using(var searcher = new ManagementObjectSearcher($"SELECT CommandLine FROM Win32_Process WHERE ProcessID = {process.Id}"))
 					{
 						foreach(var manager in searcher.Get())
 						{
@@ -64,27 +64,27 @@ namespace cssbhop
 					_game.ProcessName = process.MainModule.ModuleName;
 					_game.Process = process;
 					_game.Insecure = _game.CommandLine.Contains("-insecure");
-					_game.ProcessId = process.Id;
+					_game.ProcessID = process.Id;
 					_game.ProcessHandler = process.Handle;
 
 					foreach(ProcessModule module in _game.Process.Modules)
 					{
 						if(module.ModuleName.Equals("client.dll"))
 						{
-							_game.ClientDll = (int)module.BaseAddress;
-							Console.WriteLine("client.dll ~ 0x" + _game.ClientDll.ToString("X"));
+							_game.ClientDLL = (int)module.BaseAddress;
+							Console.WriteLine("client.dll ~ 0x" + _game.ClientDLL.ToString("X"));
 						}
 
 						else if(module.ModuleName.Equals("vguimatsurface.dll"))
 						{
-							_game.Vguidll = (int)module.BaseAddress;
-							Console.WriteLine("vguimatsurface.dll ~ 0x" + _game.Vguidll.ToString("X"));
+							_game.VGUIDLL = (int)module.BaseAddress;
+							Console.WriteLine("vguimatsurface.dll ~ 0x" + _game.VGUIDLL.ToString("X"));
 						}
 					}
 
-					_game.LocalPlayerAddress = _game.ReadInt(_game.ClientDll + Offsets.LocalPlayer);
+					_game.LocalPlayerAddress = _game.ReadInt(_game.ClientDLL + Offsets.LocalPlayer);
 
-					Console.WriteLine(Environment.NewLine + $"Found {_game.ProcessName} ({_game.Name} ~ PID {_game.ProcessId})");
+					Console.WriteLine(Environment.NewLine + $"Found {_game.ProcessName} ({_game.Name} ~ PID {_game.ProcessID})");
 
 					if(!_game.Insecure)
 					{

@@ -76,7 +76,7 @@ namespace cssbhop
 		/// <summary>
 		/// Process ID.
 		/// </summary>
-		public int ProcessId
+		public int ProcessID
 		{
 			get;
 			set;
@@ -94,7 +94,7 @@ namespace cssbhop
 		/// <summary>
 		/// Address for the client.dll module.
 		/// </summary>
-		public int ClientDll
+		public int ClientDLL
 		{
 			get;
 			set;
@@ -103,7 +103,7 @@ namespace cssbhop
 		/// <summary>
 		/// Address for the vguimatsurface.dll module.
 		/// </summary>
-		public int Vguidll
+		public int VGUIDLL
 		{
 			get;
 			set;
@@ -213,7 +213,7 @@ namespace cssbhop
 
 				if((++i % 1000) == 0)
 				{
-					LocalPlayerAddress = ReadInt(ClientDll + Offsets.LocalPlayer);
+					LocalPlayerAddress = ReadInt(ClientDLL + Offsets.LocalPlayer);
 
 					if(MonitorList?.Count > 0)
 					{
@@ -229,14 +229,14 @@ namespace cssbhop
 #endif
 
 #if DEBUG
-                Console.WriteLine("Team? {0} Alive? {1} can jump {2} in water {3}", this.Team, this.LifeState, this.CanJump.ToString(), this.InWater.ToString());
+                Console.WriteLine($"Team? {Team} Alive? {LifeState} can jump {CanJump} in water {InWater}");
 #endif
 
 				bool bSpaceHeld = ((GetAsyncKeyState(Keys.Space) & (1 << 16)) > 0);
 
 				if(bSpaceHeld)
 				{
-					WriteInt(ClientDll + Offsets.JumpAddress, 4);
+					WriteInt(ClientDLL + Offsets.JumpAddress, 4);
 				}
 
 				if((!CanJump && !InWater) || !Alive || Team < 2 || Paused)
@@ -252,11 +252,11 @@ namespace cssbhop
 				}
 
 				// 5 - jumping, 4 - not
-				WriteInt(ClientDll + Offsets.JumpAddress, 5);
+				WriteInt(ClientDLL + Offsets.JumpAddress, 5);
 
 				Thread.Sleep(25);
 #if DEBUG
-                Console.WriteLine("1: {0}", this.ReadInt(this.ClientDLL + Offsets.JumpAddress));
+                Console.WriteLine($"1: {ReadInt(ClientDLL + Offsets.JumpAddress)}");
 #endif
 			}
 		}
@@ -284,12 +284,12 @@ namespace cssbhop
 			{
 				if(Process == null)
 				{
-					throw new NullReferenceException($"Unable to find the process {ProcessName} (PID: {ProcessId}).");
+					throw new NullReferenceException($"Unable to find the process {ProcessName} (PID: {ProcessID}).");
 				}
 
 				try
 				{
-					Process.GetProcessById(ProcessId);
+					Process.GetProcessById(ProcessID);
 				}
 
 				catch(ArgumentException)
@@ -340,7 +340,7 @@ namespace cssbhop
 		/// <returns>Value of the memory address we asked to read.</returns>
 		public int ReadInt(int address)
 		{
-			byte[] bData = new byte[4];
+			var bData = new byte[4];
 			IntPtr ipBytesRead;
 
 			if(!ReadProcessMemory(ProcessHandler, (IntPtr)address, bData, bData.Length, out ipBytesRead) || ipBytesRead.ToInt32() != 4)
@@ -359,7 +359,7 @@ namespace cssbhop
 		/// <returns>True if written or false if not.</returns>
 		public bool WriteInt(int address, int value)
 		{
-			byte[] bData = BitConverter.GetBytes(value);
+			var bData = BitConverter.GetBytes(value);
 			IntPtr ipBytesWritten;
 
 			if(!WriteProcessMemory(ProcessHandler, (IntPtr)address, bData, bData.Length, out ipBytesWritten) || ipBytesWritten.ToInt32() != 4)
@@ -418,7 +418,7 @@ namespace cssbhop
 		/// <summary>
 		/// Is the game paused?
 		/// </summary>
-		public bool Paused => (ReadInt(Offsets.ChatOpen) == 1 || ReadInt(Vguidll + Offsets.PauseMenu) == 1);
+		public bool Paused => (ReadInt(Offsets.ChatOpen) == 1 || ReadInt(VGUIDLL + Offsets.PauseMenu) == 1);
 
 		/// <summary>
 		/// Checks if the player is able to jump which is: either on ground, on ladder or waterlevel being 2 or higher.
