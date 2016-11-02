@@ -156,7 +156,8 @@ namespace cssbhop
 				}
 			}
 
-			_game.KillThreads();
+			_game.Dispose();
+			monitor.Dispose();
 		}
 		#endregion
 	}
