@@ -8,7 +8,7 @@ namespace cssbhop
 	/// <summary>
 	/// Extends the Stopwatch class for our purposes.
 	/// </summary>
-	internal class Monitor : Stopwatch, IDisposable
+	internal sealed class Monitor : Stopwatch, IDisposable
 	{
 		#region Private variables
 		/// <summary>
@@ -68,7 +68,7 @@ namespace cssbhop
 		/// Disposal implementation.
 		/// </summary>
 		/// <param name="disposing">Are we currently disposing?</param>
-		protected virtual void Dispose(bool disposing)
+		private void Dispose(bool disposing)
 		{
 			if(_disposed)
 			{

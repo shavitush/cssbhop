@@ -4,7 +4,7 @@
 	/// Const values and offsets.
 	/// All are updated for 15/09/2016 (dd/mm/yy of course); might break with updates.
 	/// </summary>
-	internal class Offsets
+	internal static class Offsets
 	{
 		#region Memory addresses
 		/// <summary>
@@ -33,11 +33,6 @@
 		/// Life status; 25600 is alive.
 		/// </summary>
 		public static int Lifestate { get; } = 0x93;
-
-		/// <summary>
-		/// Health, used for testing and finding LocalPlayer.
-		/// </summary>
-		public static int Health { get; } = 0x94;
 
 		/// <summary>
 		/// Team number, so we don't trigger bhop in spectator mode.

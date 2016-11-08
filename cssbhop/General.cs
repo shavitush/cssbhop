@@ -1,6 +1,6 @@
 ﻿namespace cssbhop
 {
-	public class General
+	public static class General
 	{
 		#region Public variables
 		/// <summary>
@@ -20,7 +20,7 @@
 		{
 			get;
 			set;
-		} = false;
+		}
 		#endregion
 	}
 }
