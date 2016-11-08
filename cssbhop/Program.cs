@@ -6,7 +6,7 @@ using Mono.Options;
 
 namespace cssbhop
 {
-	public class Program
+	public static class Program
 	{
 		#region Game related settings
 		private const string ProcessName = "hl2.exe";
@@ -60,7 +60,6 @@ namespace cssbhop
 					}
 
 					_game.Name = process.MainWindowTitle;
-					_game.Path = process.MainModule.FileName;
 					_game.ProcessName = process.MainModule.ModuleName;
 					_game.Process = process;
 					_game.Insecure = _game.CommandLine.Contains("-insecure");
@@ -102,9 +101,9 @@ namespace cssbhop
 					bFound = true;
 				}
 
-				catch(Win32Exception exception)
+				catch(Exception ex)
 				{
-					if((uint)exception.ErrorCode != 0x80004005)
+					if(ex is Win32Exception && (uint)(ex as Win32Exception).ErrorCode != 0x80004005)
 					{
 						throw;
 					}

@@ -11,26 +11,17 @@ using Timer = System.Timers.Timer;
 
 namespace cssbhop
 {
-	internal class GameProcess : IDisposable
+	internal sealed class GameProcess : IDisposable
 	{
 		/// <summary>
 		/// A value to know when memory reads fail.
 		/// </summary>
-		public const int MemoryReadFailed = int.MinValue;
+		private const int MemoryReadFailed = int.MinValue;
 
 		/// <summary>
 		/// Window title for the game.
 		/// </summary>
 		public string Name
-		{
-			get;
-			set;
-		}
-
-		/// <summary>
-		/// Path to the game's process.
-		/// </summary>
-		public string Path
 		{
 			get;
 			set;
@@ -71,7 +62,7 @@ namespace cssbhop
 		{
 			get;
 			set;
-		} = null;
+		}
 
 		/// <summary>
 		/// Process ID.
@@ -87,7 +78,7 @@ namespace cssbhop
 		/// </summary>
 		public IntPtr ProcessHandler
 		{
-			get;
+			private get;
 			set;
 		} = IntPtr.Zero;
 
@@ -115,14 +106,14 @@ namespace cssbhop
 		/// </summary>
 		public int LocalPlayerAddress
 		{
-			get;
+		private get;
 			set;
 		}
 
 		/// <summary>
 		/// Cheat thread.
 		/// </summary>
-		public Thread Thread
+		private Thread Thread
 		{
 			get;
 			set;
@@ -181,23 +172,6 @@ namespace cssbhop
 			KeepAlive.Elapsed += OnTimedEvent;
 			KeepAlive.Interval = 2500;
 			KeepAlive.Enabled = true;
-		}
-
-		/// <summary>
-		/// Kills the cheat related threads and timers.
-		/// </summary>
-		public void KillThreads()
-		{
-			try
-			{
-				Thread.Abort();
-				KeepAlive.Close();
-			}
-
-			catch(Exception)
-			{
-				Console.WriteLine("ERROR CLOSING THREADS!");
-			}
 		}
 
 		/// <summary>
@@ -278,7 +252,7 @@ namespace cssbhop
 		/// <summary>
 		/// Returns true if the game process is still open.
 		/// </summary>
-		public bool Running
+		private bool Running
 		{
 			get
 			{
@@ -352,78 +326,71 @@ namespace cssbhop
 		}
 
 		/// <summary>
+		/// This is here so I don't need to create an ipBytesWritten variable every time I write memory.
+		/// </summary>
+		private IntPtr _ipBytesWritten;
+
+		/// <summary>
 		/// Writes a value to a specified memory address.
 		/// </summary>
 		/// <param name="address">Address to write to.</param>
 		/// <param name="value">Integer value to write.</param>
 		/// <returns>True if written or false if not.</returns>
-		public bool WriteInt(int address, int value)
+		private void WriteInt(int address, int value)
 		{
 			var bData = BitConverter.GetBytes(value);
-			IntPtr ipBytesWritten;
-
-			if(!WriteProcessMemory(ProcessHandler, (IntPtr)address, bData, bData.Length, out ipBytesWritten) || ipBytesWritten.ToInt32() != 4)
-			{
-				return false;
-			}
-
-			return true;
+			WriteProcessMemory(ProcessHandler, (IntPtr)address, bData, bData.Length, out _ipBytesWritten);
 		}
-
-		/// <summary>
-		/// Gets the player's health.
-		/// </summary>
-		public int Health => ReadInt(LocalPlayerAddress + Offsets.Health);
 
 		/// <summary>
 		/// Gets the player's team.
 		/// </summary>
-		public int Team => ReadInt(LocalPlayerAddress + Offsets.Team);
+		private int Team => ReadInt(LocalPlayerAddress + Offsets.Team);
 
 		/// <summary>
 		/// Gets the player's movetype.
 		/// </summary>
-		public int MoveType => ReadInt(LocalPlayerAddress + Offsets.MoveType);
+		private int MoveType => ReadInt(LocalPlayerAddress + Offsets.MoveType);
 
 		/// <summary>
 		/// Gets the lifestate, 25600 is alive.
 		/// </summary>
-		public int LifeState => ReadInt(LocalPlayerAddress + Offsets.Lifestate);
+		private int LifeState => ReadInt(LocalPlayerAddress + Offsets.Lifestate);
 
 		/// <summary>
 		/// Checks if the player is alive.
 		/// </summary>
-		public bool Alive => (LifeState == 25600);
+		private bool Alive => (LifeState == 25600);
 
 		/// <summary>
 		/// Gets the player's ground entity.
 		/// </summary>
-		public int GroundEntity => ReadInt(LocalPlayerAddress + Offsets.GroundEntity);
+		private int GroundEntity => ReadInt(LocalPlayerAddress + Offsets.GroundEntity);
 
 		/// <summary>
 		/// Checks if the player is on a ladder.
 		/// </summary>
-		public bool OnLadder => (MoveType == 9); // 9 is ladder!
+		private bool OnLadder => (MoveType == 9); // 9 is ladder!
 
 		/// <summary>
 		/// Gets the player's flags.
 		/// </summary>
-		public int Flags => ReadInt(LocalPlayerAddress + Offsets.Flags);
+		private int Flags => ReadInt(LocalPlayerAddress + Offsets.Flags);
 
 		/// <summary>
 		/// Is the player inside water?
 		/// </summary>
-		public bool InWater => ((Flags & (1 << 9)) > 0);
+		private bool InWater => ((Flags & (1 << 9)) > 0);
 
 		/// <summary>
 		/// Is the game paused?
 		/// </summary>
-		public bool Paused => (ReadInt(Offsets.ChatOpen) == 1 || ReadInt(VGUIDLL + Offsets.PauseMenu) == 1);
+		private bool Paused => (ReadInt(Offsets.ChatOpen) == 1 || ReadInt(VGUIDLL + Offsets.PauseMenu) == 1);
 
 		/// <summary>
 		/// Checks if the player is able to jump which is: either on ground, on ladder or waterlevel being 2 or higher.
 		/// </summary>
-		public bool CanJump => (GroundEntity != -1 || OnLadder);
+		private bool CanJump => (GroundEntity != -1 || OnLadder);
 
 		#region IDisposable support
 		/// <summary>
@@ -445,7 +412,7 @@ namespace cssbhop
 		/// Disposal implementation.
 		/// </summary>
 		/// <param name="disposing">Are we currently disposing?</param>
-		protected virtual void Dispose(bool disposing)
+		private void Dispose(bool disposing)
 		{
 			if(_disposed)
 			{
