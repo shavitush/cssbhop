@@ -21,7 +21,7 @@ namespace cssbhop
 		/// <summary>
 		/// Window title for the game.
 		/// </summary>
-		public string Name
+		public string Title
 		{
 			get;
 			set;

@@ -59,7 +59,7 @@ namespace cssbhop
 						}
 					}
 
-					_game.Name = process.MainWindowTitle;
+					_game.Title = process.MainWindowTitle;
 					_game.ProcessName = process.MainModule.ModuleName;
 					_game.Process = process;
 					_game.Insecure = _game.CommandLine.Contains("-insecure");
@@ -83,7 +83,7 @@ namespace cssbhop
 
 					_game.LocalPlayerAddress = _game.ReadInt(_game.ClientDLL + Offsets.LocalPlayer);
 
-					Console.WriteLine(Environment.NewLine + $"Found {_game.ProcessName} ({_game.Name} ~ PID {_game.ProcessID})");
+					Console.WriteLine(Environment.NewLine + $"Found {_game.ProcessName} ({_game.Title} ~ PID {_game.ProcessID})");
 
 					if(!_game.Insecure)
 					{
