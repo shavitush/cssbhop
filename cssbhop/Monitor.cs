@@ -14,7 +14,6 @@ namespace cssbhop
 		/// <summary>
 		/// Private variables.
 		/// </summary>
-		private readonly Stopwatch _swStopwatch;
 		private readonly string _sFormatting;
 		#endregion
 
@@ -25,11 +24,10 @@ namespace cssbhop
 		public Monitor(string formatting, bool start = false)
 		{
 			_sFormatting = formatting;
-			_swStopwatch = new Stopwatch();
 
 			if(start)
 			{
-				_swStopwatch.Start();
+				Start();
 			}
 		}
 		#endregion
@@ -41,8 +39,8 @@ namespace cssbhop
 		/// <returns></returns>
 		public override string ToString()
 		{
-			string sTimeElapsed = _swStopwatch.ElapsedMilliseconds.ToString();
-			_swStopwatch.Reset();
+			string sTimeElapsed = ElapsedMilliseconds.ToString();
+			Reset();
 
 			return _sFormatting.Replace("{ms}", sTimeElapsed);
 		}
